@@ -17,6 +17,12 @@ if [[ -z "${GITHUB_REPOSITORY}" ]]; then
     exit 1
 fi
 
+# The user needs to have exported the GitHub repository and milestone
+if [[ -z "${GITHUB_MILESTONE}" ]]; then
+    echo "You must export the GITHUB_MILESTONE as an environment variable."
+    exit 1
+fi
+
 # You should have saved a token to .token
 GITHUB_TOKEN=$(cat .token)
 
@@ -84,7 +90,6 @@ check_milestone() {
 	if [[ "$MILESTONE_TITLE" == "${GITHUB_MILESTONE}" ]]; then
             MILESTONE_ID=$(echo "$MILESTONE" | jq --raw-output '.number')
             MILESTONE_URL=$(echo "$MILESTONE" | jq --raw-output '.url')
-            echo "Found milestone \"$GITHUB_MILESTONE\" with ID $MILESTONE_ID"
             break
         fi
     done
@@ -94,57 +99,63 @@ check_milestone() {
         echo "We couldn't find a milestone with title ${GITHUB_MILESTONE}."
         exit 1
     fi
+    echo "Found milestone \"$GITHUB_MILESTONE\" with ID $MILESTONE_ID"
 
-    # The v3 API is broken, so we use v4 (GraphQL) to get commits
-    COMMITS=$(python get_commits.py $MILESTONE_ID)
-    echo "Commits: $COMMITS"
-
-    # Now change to repository
     cd $FULLPATH
     ensure_repository
-
     BRANCH=$(git branch | grep \* | cut -d ' ' -f2)
     echo "Git Branch is $BRANCH"
-
     echo "Evaluating commits for milestone $MILESTONE_TITLE against $BRANCH"
-    for COMMIT in ${COMMITS}; do
-        FOUND_BRANCH=$(git branch --contains $COMMIT)
-        retval=$?
 
-        # Case 1: commit not found
-        if [[ $retval == 129 ]]; then
-           echo "Missing commit $COMMIT"
+    # First get pull requests - they are considered issues. Won't work without quotes
+    # echo "curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET \"${ISSUES_URL}?milestone=$MILESTONE_ID&state=all\""
+    RESPONSE=$(curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET "${ISSUES_URL}?milestone=$MILESTONE_ID&state=all")
 
-        # Case 2: found, ensure correct branch
-        elif [[ $retval == 0 ]]; then
-           FOUND_BRANCH=$(git branch --contains $COMMIT | grep \* | cut -d ' ' -f2)
-           if [[ "$FOUND_BRANCH" != "$BRANCH" ]]; then
-               echo "WRONG BRANCH $COMMIT is in branch $FOUND_BRANCH";
-           fi
-           echo "CORRECT Found $COMMIT in branch $BRANCH";           
-        else
-           echo "Unrecognized return value $retval"
-        fi        
+    PRS=$(echo "$RESPONSE" | jq --raw-output -c '.[] | @base64')
+    for P in ${PRS}; do
+        PR="$(echo "$P" | base64 --decode)"
+        PR_URL=$(echo "$PR" | jq --raw-output '.pull_request.html_url')
+        PR_NUMBER=$(echo ${PR_URL##*/})
+
+        # Only continue if there is a pull request
+        if [[ ! -z "${PR_URL}" ]]; then
+            COMMITS_URL=${PULLS_URL}/${PR_NUMBER}/commits
+            echo
+            echo "Checking Pull Request ${PR_URL}"
+            COMMITS=$(curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET ${COMMITS_URL} | jq --raw-output -c '.[] | @base64')
+            for C in ${COMMITS}; do
+                COMMIT="$(echo "$C" | base64 --decode)"
+                SHA=$(echo "$COMMIT" | jq --raw-output '.sha')
+                HTML_URL=$(echo "$COMMIT" | jq --raw-output '.html_url')  
+                check_commit $SHA $HTML_URL
+            done
+        fi
     done
-
-    # NOTE: If v3 of the API is fixed, here is start to getting pull requests
-    # Now we parse over pull requests for the milestone
-    # Note that every pull request is an issue: https://developer.github.com/v3/pulls/#labels-assignees-and-milestones
-    # DATA="{\"milestone\":${MILESTONE_ID}, \"state\": \"all\"}" # this should work, but returns null to
-    # MEMBERS=$(curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET --data "${DATA}" ${PULLS_URL})
-
-    # Raw output, compact (one entry per line)
-    # PRS=$(echo "$MEMBERS" | jq --raw-output -c '.[] | @base64')
-
-    # for P in ${PRS}; do
-    #    PR="$(echo "$I" | base64 --decode)"
-    #    MILESTONE=$(echo "$PR" | jq --raw-output '.milestone')
-    #    NUMBER=$(echo "$MILESTONE" | jq --raw-output '.number')
-    #    echo $NUMBER
-    #done
 
 }
 
+check_commit() {
+
+    COMMIT=$1
+    HTML_URL=$2
+    FOUND_BRANCH=$(git branch -q --contains $COMMIT /dev/null 2>&1)
+    retval=$?
+
+    # Case 1: commit not found
+    if [[ $retval == 129 ]]; then
+       echo "Missing $HTML_URL"
+
+    # Case 2: found, ensure correct branch
+    elif [[ $retval == 0 ]]; then
+       FOUND_BRANCH=$(git branch --contains $COMMIT | grep \* | cut -d ' ' -f2)
+       if [[ "$FOUND_BRANCH" != "$BRANCH" ]]; then
+           echo "WRONG BRANCH $COMMIT is in branch $FOUND_BRANCH";
+       fi
+       echo "CORRECT Found $COMMIT in branch $BRANCH";           
+    else
+       echo "Unrecognized return value $retval"
+    fi
+}
 
 main () {
     check_credentials

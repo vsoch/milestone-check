@@ -23,45 +23,56 @@ export GITHUB_REPOSITORY=sylabs/singularity
 export GITHUB_MILESTONE="3.3.1"
 ```
 
-If it isn't obvious (probably not) you should be sitting in the GitHub
-repository with the branch that you want to check against the milestone.
-If you haven't done that yet, do it now. When you are ready, run the script!
-You need to provide the path to the repository to change to.
+When you are ready, run the script! You need to provide the path to the repository to change to.
 
 ```bash
 $ /bin/bash run_check.sh /home/vanessa/Documents/Dropbox/Code/Google/go/src/github.com/sylabs/singularity
 ==========================================================================
 Found milestone "3.3.1" with ID 36
-Commits: 2737e74f02c76cab65ce03896ef4ff67a79d8c23 5baaa08b8be287354782cf48c308536e13599758 c32b1d046558c8f9f27aea2eb801e4f4c587792f aa3562bad57b490dd08f94404a288d9847ef7854 89180afcea353e4cb2fb0da97d2e45110693fcd0 c017a2e4654560111aa197749f08acaefab57532 f8ba838fd1d877ebcc3eae75be0bb11a9e0aace4 86f32e8ee120d366e037e28d52b4992dcfeae093 658185cfd43b1a0e136a223308b7db2f2efbe4c7 122fd8267ce73858fc5b61959c94c12806966c27 cbd658b7c1c89ef848c433b9bc7f0ccf9fdfb9f7 96f4414f30efb76f29c3158560739e677f9d7b24 698476a7fdf614139413d5a40c62f1b8771c74c5 680ffd1ed27bb92557ffbb1ef05458a6f875b01e cad9fd957e03c7342c8968274fecbf66239bf1c3 17ad71fa9db9790e54429c27853682d541e96b1b 75d0c540bf1b01b9ba93a1b035d3aff438ffb37a 3a657bf2dbd6d76351a3f199a8e016f205216a6e
 Git Branch is master
 Evaluating commits for milestone 3.3.1 against master
+
+Checking Pull Request https://github.com/sylabs/singularity/pull/4073
+Missing https://github.com/sylabs/singularity/commit/c5f7b8fd901739a1b4629ca58089865631f568c3
+Missing https://github.com/sylabs/singularity/commit/8942099907053727436edf6ab2b3a8e6723474b7
+Missing https://github.com/sylabs/singularity/commit/4c95f6aa14b561920d41e7a1ea7e9747194ab361
+
+Checking Pull Request https://github.com/sylabs/singularity/pull/4064
 CORRECT Found 2737e74f02c76cab65ce03896ef4ff67a79d8c23 in branch master
-CORRECT Found 5baaa08b8be287354782cf48c308536e13599758 in branch master
+CORRECT Found 17ad71fa9db9790e54429c27853682d541e96b1b in branch master
+
+Checking Pull Request https://github.com/sylabs/singularity/pull/4054
 CORRECT Found c017a2e4654560111aa197749f08acaefab57532 in branch master
 CORRECT Found c32b1d046558c8f9f27aea2eb801e4f4c587792f in branch master
-CORRECT Found 96f4414f30efb76f29c3158560739e677f9d7b24 in branch master
-CORRECT Found 17ad71fa9db9790e54429c27853682d541e96b1b in branch master
-CORRECT Found f8ba838fd1d877ebcc3eae75be0bb11a9e0aace4 in branch master
-error: no such commit 3a657bf2dbd6d76351a3f199a8e016f205216a6e
-Missing commit 3a657bf2dbd6d76351a3f199a8e016f205216a6e
-CORRECT Found 698476a7fdf614139413d5a40c62f1b8771c74c5 in branch master
-CORRECT Found 122fd8267ce73858fc5b61959c94c12806966c27 in branch master
-CORRECT Found 89180afcea353e4cb2fb0da97d2e45110693fcd0 in branch master
-CORRECT Found 86f32e8ee120d366e037e28d52b4992dcfeae093 in branch master
-CORRECT Found cad9fd957e03c7342c8968274fecbf66239bf1c3 in branch master
-CORRECT Found 75d0c540bf1b01b9ba93a1b035d3aff438ffb37a in branch master
-CORRECT Found aa3562bad57b490dd08f94404a288d9847ef7854 in branch master
-CORRECT Found cbd658b7c1c89ef848c433b9bc7f0ccf9fdfb9f7 in branch master
-error: no such commit 680ffd1ed27bb92557ffbb1ef05458a6f875b01e
-Missing commit 680ffd1ed27bb92557ffbb1ef05458a6f875b01e
+
+Checking Pull Request https://github.com/sylabs/singularity/pull/4051
 CORRECT Found 658185cfd43b1a0e136a223308b7db2f2efbe4c7 in branch master
+
+Checking Pull Request https://github.com/sylabs/singularity/pull/4047
+CORRECT Found 89180afcea353e4cb2fb0da97d2e45110693fcd0 in branch master
+
+Checking Pull Request https://github.com/sylabs/singularity/pull/4042
+Missing https://github.com/sylabs/singularity/commit/680ffd1ed27bb92557ffbb1ef05458a6f875b01e
+
+Checking Pull Request https://github.com/sylabs/singularity/pull/4039
+Missing https://github.com/sylabs/singularity/commit/3a657bf2dbd6d76351a3f199a8e016f205216a6e
+
+Checking Pull Request https://github.com/sylabs/singularity/pull/4029
+CORRECT Found 698476a7fdf614139413d5a40c62f1b8771c74c5 in branch master
+CORRECT Found 86f32e8ee120d366e037e28d52b4992dcfeae093 in branch master
+CORRECT Found 122fd8267ce73858fc5b61959c94c12806966c27 in branch master
+CORRECT Found aa3562bad57b490dd08f94404a288d9847ef7854 in branch master
+CORRECT Found cad9fd957e03c7342c8968274fecbf66239bf1c3 in branch master
+CORRECT Found cbd658b7c1c89ef848c433b9bc7f0ccf9fdfb9f7 in branch master
+CORRECT Found f8ba838fd1d877ebcc3eae75be0bb11a9e0aace4 in branch master
+
+Checking Pull Request https://github.com/sylabs/singularity/pull/3946
+CORRECT Found 5baaa08b8be287354782cf48c308536e13599758 in branch master
+CORRECT Found 96f4414f30efb76f29c3158560739e677f9d7b24 in branch master
+CORRECT Found 75d0c540bf1b01b9ba93a1b035d3aff438ffb37a in branch master
 ==========================================================================
 ```
 
-For the above, we get a total of 18 commits, and 16 are found in master,
-but two are missing. (Note I need to check how this API handles squash and merge).
-
-Note that it currently uses both the v3 and v4 (graphQL) GitHub APIS - this
-was because there is a bug with version 2 that it didn't seem to filter
-issues by pull requests. When GitHub supports responds I'd like to switch to
-using v3, and remove the Python script.
+For the above, we get a total of 18 pull requests that are tagged with the milestone,
+and for each we can see the commits that are present (CORRECT) or Missing.
+Note that I need to check how this API handles squash and merge.
