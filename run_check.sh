@@ -90,7 +90,6 @@ check_milestone() {
 	if [[ "$MILESTONE_TITLE" == "${GITHUB_MILESTONE}" ]]; then
             MILESTONE_ID=$(echo "$MILESTONE" | jq --raw-output '.number')
             MILESTONE_URL=$(echo "$MILESTONE" | jq --raw-output '.url')
-            echo "Found milestone \"$GITHUB_MILESTONE\" with ID $MILESTONE_ID"
             break
         fi
     done
@@ -100,6 +99,7 @@ check_milestone() {
         echo "We couldn't find a milestone with title ${GITHUB_MILESTONE}."
         exit 1
     fi
+    echo "Found milestone \"$GITHUB_MILESTONE\" with ID $MILESTONE_ID"
 
     cd $FULLPATH
     ensure_repository
@@ -107,23 +107,29 @@ check_milestone() {
     echo "Git Branch is $BRANCH"
     echo "Evaluating commits for milestone $MILESTONE_TITLE against $BRANCH"
 
-    # First get pull requests - we will also look at issues
-    RESPONSE=$(curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET ${PULLS_URL}?milestone=$MILESTONE_ID)
+    # First get pull requests - they are considered issues. Won't work without quotes
+    # echo "curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET \"${ISSUES_URL}?milestone=$MILESTONE_ID&state=all\""
+    RESPONSE=$(curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET "${ISSUES_URL}?milestone=$MILESTONE_ID&state=all")
 
     PRS=$(echo "$RESPONSE" | jq --raw-output -c '.[] | @base64')
     for P in ${PRS}; do
         PR="$(echo "$P" | base64 --decode)"
-        COMMITS_URL=$(echo "$PR" | jq --raw-output '._links.commits.href')
-        PR_URL=$(echo "$PR" | jq --raw-output '.html_url')
-        echo
-        echo "Checking Pull Request ${PR_URL}"
-        COMMITS=$(curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET ${COMMITS_URL} | jq --raw-output -c '.[] | @base64')
-        for C in ${COMMITS}; do
-            COMMIT="$(echo "$C" | base64 --decode)"
-            SHA=$(echo "$COMMIT" | jq --raw-output '.sha')
-            HTML_URL=$(echo "$COMMIT" | jq --raw-output '.html_url')  
-            check_commit $SHA $HTML_URL
-        done
+        PR_URL=$(echo "$PR" | jq --raw-output '.pull_request.html_url')
+        PR_NUMBER=$(echo ${PR_URL##*/})
+
+        # Only continue if there is a pull request
+        if [[ ! -z "${PR_URL}" ]]; then
+            COMMITS_URL=${PULLS_URL}/${PR_NUMBER}/commits
+            echo
+            echo "Checking Pull Request ${PR_URL}"
+            COMMITS=$(curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET ${COMMITS_URL} | jq --raw-output -c '.[] | @base64')
+            for C in ${COMMITS}; do
+                COMMIT="$(echo "$C" | base64 --decode)"
+                SHA=$(echo "$COMMIT" | jq --raw-output '.sha')
+                HTML_URL=$(echo "$COMMIT" | jq --raw-output '.html_url')  
+                check_commit $SHA $HTML_URL
+            done
+        fi
     done
 
 }
