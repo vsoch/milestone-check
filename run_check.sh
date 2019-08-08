@@ -122,6 +122,8 @@ check_milestone() {
             COMMITS_URL=${PULLS_URL}/${PR_NUMBER}/commits
             echo
             echo "Checking Pull Request ${PR_URL}"
+
+            # The commits_url includes commits from the pull request, and NOT merge (squash, regular, or rebase) 
             COMMITS=$(curl -sSL -H "${AUTH_HEADER}" -H "${HEADER}" -X GET ${COMMITS_URL} | jq --raw-output -c '.[] | @base64')
             for C in ${COMMITS}; do
                 COMMIT="$(echo "$C" | base64 --decode)"

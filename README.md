@@ -4,6 +4,13 @@ This script will use the GitHub API to check a repository on your host
 against a Milestrone, the idea being to ensure that all pull requests 
 (commits) from the milestone are included.
 
+**Important** The GitHub API can only return the original commits associated with
+a pull request, so _if you squash and merge into one commit, the new commit will
+not be found by the checker.** This shouldn't be an issue if you don't squash, and if
+you do infrequently, you can open the Pull Request URL to check against the original
+commits.
+
+
 ## Setup
 
 You'll need to generate a GitHub token for the tool. Go to Settings -> Developer Settings -> Personal Access Tokens
